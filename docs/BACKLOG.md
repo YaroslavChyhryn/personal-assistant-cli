@@ -6,34 +6,32 @@
 
 ### Dev 1 — Contacts + Birthdays
 
-Гілка: `feature/contacts`
+Гілка: `feature/contacts` | Тікет: [ticket-dev1-contacts.md](ticket-dev1-contacts.md)
 
-- [ ] SQLModel-моделі в `domain/models.py`: Contact, Phone, Email (з relationships)
-- [ ] `contacts_repository.py`: add, get_by_id, list_all, search, update, delete
-- [ ] Метод `get_upcoming_birthdays(days)` в репозиторії
-- [ ] Валідатори в `common/validators.py`: phone, email, birthday
+- [ ] SQLModel-моделі в `domain/models.py`: Contact, Phone (з relationships)
+- [ ] `contacts_repository.py`: наслідує BaseRepository, + search, get_upcoming_birthdays
 - [ ] Unit-тести
 
 ---
 
 ### Dev 2 — Notes + Tags
 
-Гілка: `feature/notes`
+Гілка: `feature/notes` | Тікет: [ticket-dev2-notes.md](ticket-dev2-notes.md)
 
 - [ ] SQLModel-моделі в `domain/models.py`: Note, Tag, NoteTagLink (many-to-many)
-- [ ] `notes_repository.py`: add, get_by_id, list_all, search, search_by_tag, update, delete
+- [ ] `notes_repository.py`: наслідує BaseRepository, + search, search_by_tag, add_with_tags
 - [ ] Unit-тести
 
 ---
 
 ### Dev 3 — CLI
 
-Гілка: `feature/cli`
+Гілка: `feature/cli` | Тікет: [ticket-dev3-cli.md](ticket-dev3-cli.md) | Залежить від Dev 1 і Dev 2
 
-- [ ] CLI-команди в `contacts_commands.py`: add, list, search, delete, birthdays
-- [ ] CLI-команди в `notes_commands.py`: add, list, search, by-tag, delete
-- [ ] Rich-вивід в `presenters.py`: таблиці для контактів та нотаток
-- [ ] Підключити sub-commands в `app.py`
+- [ ] Декоратор input_error
+- [ ] Команди контактів: add, change, phone, all
+- [ ] Команди birthday: add-birthday, show-birthday, birthdays
+- [ ] Команди нотаток: add-note, find-note, find-tag
 
 ---
 
@@ -41,11 +39,10 @@
 
 - [x] Структура проєкту, pyproject.toml, requirements.txt
 - [x] config.py, db.py, bootstrap.py
-- [x] BaseRepository ABC, exceptions
+- [x] BaseRepository з CRUD
 - [x] .pre-commit-config.yaml, README, BACKLOG
-- [ ] `contacts_service.py`: CRUD через репозиторій + валідація
-- [ ] `notes_service.py`: CRUD через репозиторій
-- [ ] `calendar_service.py`: upcoming birthdays через репозиторій
+- [x] Тікети для Dev 1, Dev 2, Dev 3
+- [ ] `contacts_service.py`, `notes_service.py`, `calendar_service.py`
 - [ ] Code review + інтеграція гілок
 - [ ] Integration-тести
 

@@ -1,1 +1,5 @@
-# TODO: implement CalendarService (upcoming birthdays lookup)
+# TODO (Dev 4):
+#
+# class CalendarService:
+#     def __init__(self, repository: ContactsRepository): ...
+#     def get_upcoming_birthdays(self, days: int = 7) -> list[Contact]: ...

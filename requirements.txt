@@ -1,7 +1,4 @@
 sqlmodel>=0.0.22
-typer[all]>=0.15.0
-rich>=13.9.0
-platformdirs>=4.3.0
 pytest>=8.3.0
 ruff>=0.8.0
 pre-commit>=4.0.0

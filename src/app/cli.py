@@ -1,0 +1,33 @@
+def parse_input(user_input: str) -> tuple[str, list[str]]:
+    cmd, *args = user_input.strip().split()
+    return cmd.lower(), args
+
+
+def run() -> None:
+    print("Welcome to the assistant bot!")
+
+    while True:
+        user_input = input("Enter a command: ")
+
+        if not user_input.strip():
+            continue
+
+        command, args = parse_input(user_input)
+
+        if command in ("close", "exit"):
+            print("Good bye!")
+            break
+
+        # TODO (Dev 3): add command handlers
+        # if command == "add": ...
+        # elif command == "change": ...
+        # elif command == "phone": ...
+        # elif command == "all": ...
+        # elif command == "add-birthday": ...
+        # elif command == "show-birthday": ...
+        # elif command == "birthdays": ...
+        # elif command == "add-note": ...
+        # elif command == "find-note": ...
+        # elif command == "find-tag": ...
+        else:
+            print("Invalid command.")

@@ -1,10 +1,10 @@
-from app.bootstrap import init_db
-from app.interfaces.cli.app import app
+from app.bootstrap import bootstrap
+from app.cli import run
 
 
 def main() -> None:
-    init_db()
-    app()
+    bootstrap()
+    run()
 
 
 if __name__ == "__main__":

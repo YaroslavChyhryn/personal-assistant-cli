@@ -1,10 +1,10 @@
+import logging
 from pathlib import Path
 
-from platformdirs import user_data_dir
-
-APP_NAME = "personal-assistant"
-APP_AUTHOR = "neoversity"
-
-DATA_DIR = Path(user_data_dir(APP_NAME, APP_AUTHOR))
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = ROOT_DIR / "data"
 DB_PATH = DATA_DIR / "assistant.db"
 DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+LOG_LEVEL = logging.INFO
+LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s — %(message)s"

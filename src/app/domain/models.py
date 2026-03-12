@@ -1,10 +1,10 @@
-"""SQLModel models — single source of truth for DB tables, schemas, and domain objects.
+# TODO (Dev 1):
+#
+# class Contact(SQLModel, table=True): ...
+# class Phone(SQLModel, table=True): ...
 
-Define all your models here using SQLModel with `table=True`.
-These classes serve as:
-  - SQLite table definitions
-  - Pydantic schemas (validation, serialization)
-  - Domain objects to pass between layers
-
-TODO: define Contact, Phone, Email, Note, Tag models and their relationships.
-"""
+# TODO (Dev 2):
+#
+# class NoteTagLink(SQLModel, table=True): ...
+# class Tag(SQLModel, table=True): ...
+# class Note(SQLModel, table=True): ...

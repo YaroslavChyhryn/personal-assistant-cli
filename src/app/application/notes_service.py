@@ -1,1 +1,4 @@
-# TODO: implement NotesService (CRUD + tag operations via repository)
+# TODO (Dev 4):
+#
+# class NotesService:
+#     def __init__(self, repository: NotesRepository): ...
