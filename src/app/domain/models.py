@@ -1,17 +1,9 @@
-from sqlmodel import Field, Relationship, SQLModel
-
-# TODO (Dev 1):
-#
-# class Contact(SQLModel, table=True): ...
-# class Phone(SQLModel, table=True): ...
-
-
-from __future__ import annotations
-
 from datetime import date
 
 from pydantic import field_validator
 from sqlmodel import Field, Relationship, SQLModel
+
+# ── Contacts (Dev 1) ────────────────────────────────────────────────
 
 
 class Contact(SQLModel, table=True):
@@ -52,10 +44,9 @@ class Phone(SQLModel, table=True):
         if not v.isdigit() or len(v) != 10:
             raise ValueError("Phone must contain exactly 10 digits")
         return v
-    
 
 
-# ── Notes + Tags (Dev 2) ──────────────────────────────────────────────
+# ── Notes + Tags (Dev 2) ────────────────────────────────────────────
 
 
 class NoteTagLink(SQLModel, table=True):

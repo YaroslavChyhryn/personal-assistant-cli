@@ -1,9 +1,9 @@
-from typing import Generic, TypeVar
-from sqlmodel import Session, SQLModel, select, or_
-
-from app.domain.models import Note, NoteTagLink, Tag
 from datetime import date, timedelta
-from .models import Contact
+from typing import Generic, TypeVar
+
+from sqlmodel import Session, SQLModel, or_, select
+
+from app.domain.models import Contact, Note, NoteTagLink, Tag
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -53,14 +53,6 @@ class BaseRepository(Generic[T]):
             self.session.commit()
 
 
-# TODO (Dev 1):
-#
-# class ContactsRepository(BaseRepository[Contact]):
-#     model = Contact
-#     def search(self, query: str) -> list[Contact]: ...
-#     def get_upcoming_birthdays(self, days: int = 7) -> list[Contact]: ...
-
-
 class ContactsRepository(BaseRepository[Contact]):
     # BaseRepository will use this model for generic CRUD operations
     model = Contact
@@ -102,7 +94,7 @@ class ContactsRepository(BaseRepository[Contact]):
                 result.append(contact)
 
         return result
-    
+
 
 class NotesRepository(BaseRepository[Note]):
     model = Note
@@ -117,12 +109,7 @@ class NotesRepository(BaseRepository[Note]):
         return list(self.session.exec(statement).all())
 
     def search_by_tag(self, tag: str) -> list[Note]:
-        statement = (
-            select(Note)
-            .join(NoteTagLink)
-            .join(Tag)
-            .where(Tag.name == tag)
-        )
+        statement = select(Note).join(NoteTagLink).join(Tag).where(Tag.name == tag)
         return list(self.session.exec(statement).all())
 
     def add_with_tags(self, note: Note, tag_names: list[str]) -> Note:
