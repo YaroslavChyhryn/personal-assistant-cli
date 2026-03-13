@@ -2,7 +2,6 @@ from datetime import date, timedelta
 from unittest.mock import patch
 
 import pytest
-
 from app.application.calendar_service import CalendarService
 from app.application.contacts_service import ContactsService
 from app.domain.repository import BaseRepository, ContactsRepository

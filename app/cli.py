@@ -105,7 +105,9 @@ def birthdays_cmd(args: list[str], svc: CalendarService) -> str:
     upcoming = svc.get_upcoming_birthdays(days)
     if not upcoming:
         return f"No upcoming birthdays in the next {days} days."
-    return "\n".join(f"{c.name}: {c.birthday.strftime('%d.%m.%Y')}" for c in upcoming)
+    return "\n".join(
+        f"{c.name}: {c.birthday.strftime('%d.%m.%Y')}" for c in upcoming if c.birthday is not None
+    )
 
 
 @input_error

@@ -1,5 +1,4 @@
 import pytest
-
 from app.application.notes_service import NotesService
 from app.domain.models import Note
 from app.domain.repository import NotesRepository
@@ -24,6 +23,7 @@ def test_create_note_empty_body(svc: NotesService):
 
 def test_get_note(svc: NotesService):
     created = svc.create_note("Shopping", "Buy milk")
+    assert created.id is not None
     found = svc.get_note(created.id)
     assert found.title == "Shopping"
 
@@ -63,6 +63,7 @@ def test_search_notes_no_results(svc: NotesService):
 
 def test_delete_note(svc: NotesService):
     created = svc.create_note("Shopping", "Buy milk")
+    assert created.id is not None
     svc.delete_note(created.id)
     assert svc.list_notes() == []
 

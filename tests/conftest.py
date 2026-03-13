@@ -1,7 +1,6 @@
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
-
 from app.domain.repository import ContactsRepository, NotesRepository
+from sqlmodel import Session, SQLModel, create_engine
 
 
 @pytest.fixture

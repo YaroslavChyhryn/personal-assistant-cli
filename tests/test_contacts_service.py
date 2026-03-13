@@ -1,5 +1,4 @@
 import pytest
-
 from app.application.contacts_service import ContactsService
 from app.domain.repository import ContactsRepository
 
@@ -27,6 +26,7 @@ def test_create_contact_with_birthday(svc: ContactsService):
 
 def test_get_contact(svc: ContactsService):
     created = svc.create_contact("Alice", "1234567890")
+    assert created.id is not None
     found = svc.get_contact(created.id)
     assert found.name == "Alice"
 
@@ -90,6 +90,7 @@ def test_set_birthday_invalid_format(svc: ContactsService):
 
 def test_delete_contact(svc: ContactsService):
     created = svc.create_contact("Alice", "1234567890")
+    assert created.id is not None
     svc.delete_contact(created.id)
     assert svc.list_contacts() == []
 

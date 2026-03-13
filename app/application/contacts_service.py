@@ -65,5 +65,18 @@ class ContactsService:
         contact.birthday = birthday_date
         return self.repository.update(contact)
 
+    def remove_phone(self, name: str, phone: str) -> Contact:
+        results = self.repository.search(name)
+        if not results:
+            raise KeyError("Contact not found.")
+
+        contact = results[0]
+        for p in contact.phones:
+            if p.value == phone:
+                contact.phones.remove(p)
+                return self.repository.update(contact)
+
+        raise ValueError("Phone number not found.")
+
     def delete_contact(self, contact_id: int) -> None:
         self.repository.delete(contact_id)
