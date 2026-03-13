@@ -1,12 +1,11 @@
 from datetime import date, timedelta
-from typing import Generic, TypeVar
-from sqlmodel import Session, SQLModel, or_, select
+
+from sqlmodel import Session, SQLModel, col, or_, select
+
 from app.domain.models import Contact, Note, NoteTagLink, Tag
 
-T = TypeVar("T", bound=SQLModel)
 
-
-class BaseRepository(Generic[T]):
+class BaseRepository[T: SQLModel]:
     """Base repository with working CRUD operations.
 
     Subclasses only need to set `model` and add domain-specific queries.
@@ -57,7 +56,7 @@ class ContactsRepository(BaseRepository[Contact]):
 
     def search(self, query: str) -> list[Contact]:
         # Search contacts by partial name match
-        statement = select(Contact).where(Contact.name.contains(query))
+        statement = select(Contact).where(col(Contact.name).contains(query))
         return list(self.session.exec(statement).all())
 
     def _birthday_for_year(self, original_birthday: date, year: int) -> date:
@@ -69,7 +68,7 @@ class ContactsRepository(BaseRepository[Contact]):
         """
         try:
             return original_birthday.replace(year=year)
-        
+
         except ValueError:
             # This only happens for Feb 29 in a non-leap year
             return date(year, 2, 28)
@@ -114,8 +113,8 @@ class NotesRepository(BaseRepository[Note]):
     def search(self, query: str) -> list[Note]:
         statement = select(Note).where(
             or_(
-                Note.title.contains(query),
-                Note.body.contains(query),
+                col(Note.title).contains(query),
+                col(Note.body).contains(query),
             )
         )
         return list(self.session.exec(statement).all())
@@ -124,14 +123,35 @@ class NotesRepository(BaseRepository[Note]):
         statement = select(Note).join(NoteTagLink).join(Tag).where(Tag.name == tag)
         return list(self.session.exec(statement).all())
 
+    def _get_or_create_tag(self, name: str) -> Tag:
+        statement = select(Tag).where(Tag.name == name)
+        tag = self.session.exec(statement).first()
+        if tag is None:
+            tag = Tag(name=name)
+        return tag
+
     def add_with_tags(self, note: Note, tag_names: list[str]) -> Note:
         for name in tag_names:
-            statement = select(Tag).where(Tag.name == name)
-            tag = self.session.exec(statement).first()
-            if tag is None:
-                tag = Tag(name=name)
-            note.tags.append(tag)
+            note.tags.append(self._get_or_create_tag(name))
 
+        self.session.add(note)
+        self.session.commit()
+        self.session.refresh(note)
+        return note
+
+    def add_tags_to_note(self, note: Note, tag_names: list[str]) -> Note:
+        existing = {t.name for t in note.tags}
+        for name in tag_names:
+            if name not in existing:
+                note.tags.append(self._get_or_create_tag(name))
+
+        self.session.add(note)
+        self.session.commit()
+        self.session.refresh(note)
+        return note
+
+    def remove_tag_from_note(self, note: Note, tag_name: str) -> Note:
+        note.tags = [t for t in note.tags if t.name != tag_name]
         self.session.add(note)
         self.session.commit()
         self.session.refresh(note)

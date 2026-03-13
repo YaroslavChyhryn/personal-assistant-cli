@@ -1,5 +1,5 @@
-sqlmodel>=0.0.22
-pytest>=8.3.0
-ruff>=0.8.0
-pre-commit>=4.0.0
-mypy>=1.13.0
+sqlmodel>=0.0.37
+pytest>=9.0.2
+ruff>=0.15.6
+pre-commit>=4.5.1
+mypy>=1.19.1

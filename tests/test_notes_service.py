@@ -24,6 +24,7 @@ def test_create_note_empty_body(svc: NotesService):
 
 def test_get_note(svc: NotesService):
     created = svc.create_note("Shopping", "Buy milk")
+    assert created.id is not None
     found = svc.get_note(created.id)
     assert found.title == "Shopping"
 
@@ -63,6 +64,7 @@ def test_search_notes_no_results(svc: NotesService):
 
 def test_delete_note(svc: NotesService):
     created = svc.create_note("Shopping", "Buy milk")
+    assert created.id is not None
     svc.delete_note(created.id)
     assert svc.list_notes() == []
 
@@ -93,3 +95,41 @@ def test_add_with_tags_reuses_existing(notes_repo: NotesRepository):
 
     results = notes_repo.search_by_tag("shared")
     assert len(results) == 2
+
+
+def test_create_note_with_tags(svc: NotesService):
+    note = svc.create_note("Tagged", "content", tags=["urgent", "work"])
+    assert len(note.tags) == 2
+    tag_names = {t.name for t in note.tags}
+    assert tag_names == {"urgent", "work"}
+
+
+def test_update_note(svc: NotesService):
+    created = svc.create_note("Old Title", "Old body")
+    assert created.id is not None
+    updated = svc.update_note(created.id, title="New Title", body="New body")
+    assert updated.title == "New Title"
+    assert updated.body == "New body"
+
+
+def test_update_note_partial(svc: NotesService):
+    created = svc.create_note("Title", "Body")
+    assert created.id is not None
+    updated = svc.update_note(created.id, title="New Title")
+    assert updated.title == "New Title"
+    assert updated.body == "Body"
+
+
+def test_add_tags_to_existing_note(svc: NotesService):
+    created = svc.create_note("Note", "content")
+    assert created.id is not None
+    updated = svc.add_tags(created.id, ["python", "dev"])
+    assert len(updated.tags) == 2
+
+
+def test_remove_tag_from_note(svc: NotesService):
+    created = svc.create_note("Note", "content", tags=["python", "dev"])
+    assert created.id is not None
+    updated = svc.remove_tag(created.id, "python")
+    assert len(updated.tags) == 1
+    assert updated.tags[0].name == "dev"

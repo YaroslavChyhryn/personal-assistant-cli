@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.domain.models import Contact, Phone
+from app.domain.models import Contact, Email, Phone
 from app.domain.repository import ContactsRepository
 
 
@@ -63,6 +63,24 @@ class ContactsService:
 
         contact = results[0]
         contact.birthday = birthday_date
+        return self.repository.update(contact)
+
+    def add_email(self, name: str, email: str) -> Contact:
+        results = self.repository.search(name)
+        if not results:
+            raise KeyError("Contact not found.")
+
+        contact = results[0]
+        contact.emails.append(Email(value=email))
+        return self.repository.update(contact)
+
+    def set_address(self, name: str, address: str) -> Contact:
+        results = self.repository.search(name)
+        if not results:
+            raise KeyError("Contact not found.")
+
+        contact = results[0]
+        contact.address = address
         return self.repository.update(contact)
 
     def delete_contact(self, contact_id: int) -> None:
