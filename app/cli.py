@@ -26,6 +26,38 @@ def input_error(func):
     return inner
 
 
+def get_help() -> str:
+    return (
+        "\nAvailable commands:\n"
+        "\nGeneral:"
+        "\n  hello                         - Greet the bot"
+        "\n  help                          - Show this help message"
+        "\n  close / exit                  - Exit the program"
+        "\n"
+        "\nContacts:"
+        "\n  add <name> <phone>            - Add a new contact"
+        "\n  change <name> <old> <new>     - Change a contact's phone number"
+        "\n  phone <name>                  - Show phone number(s) for a contact"
+        "\n  all                           - Show all contacts"
+        "\n  add-birthday <name> <date>    - Add birthday to contact"
+        "\n  show-birthday <name>          - Show contact birthday"
+        "\n  birthdays [days]              - Show upcoming birthdays (default: 7 days)"
+        "\n  add-email <name> <email>      - Add email to contact"
+        "\n  add-address <name> <address>  - Add address to contact"
+        "\n  delete-contact <name>         - Delete a contact"
+        "\n"
+        "\nNotes:"
+        "\n  add-note <title> [body] [#tags...]    - Add a note"
+        "\n  list-notes                            - Show all notes"
+        "\n  find-note <query>                     - Search notes by text"
+        "\n  edit-note <id> <title> [body...]      - Edit a note"
+        "\n  delete-note <id>                      - Delete a note"
+        "\n  find-tag <tag>                        - Find notes by tag"
+        "\n  add-tag <id> <tag1> [tag2...]         - Add tag(s) to a note"
+        "\n  remove-tag <id> <tag>                 - Remove a tag from a note"
+    )
+
+
 # ── Contacts ──────────────────────────────────────────────────────────
 
 
@@ -268,6 +300,8 @@ def run() -> None:
                 break
             elif command == "hello":
                 print("How can I help you?")
+            elif command == "help":
+                print(get_help())
             # Contacts
             elif command == "add":
                 print(add_contact(args, contacts_svc))
