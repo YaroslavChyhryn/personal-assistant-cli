@@ -1,4 +1,4 @@
-from app.domain.models import Note
+from app.domain.models import Note, Tag
 from app.domain.repository import NotesRepository
 
 
@@ -9,6 +9,10 @@ class NotesService:
         self.repository = repository
 
     def create_note(self, title: str, body: str = "", tags: list[str] | None = None) -> Note:
+        Note.validate_title(title)
+        if tags:
+            for name in tags:
+                Tag.validate_name(name)
         note = Note(title=title, body=body)
         if tags:
             return self.repository.add_with_tags(note, tags)
@@ -35,6 +39,8 @@ class NotesService:
         return self.repository.update(note)
 
     def add_tags(self, note_id: int, tag_names: list[str]) -> Note:
+        for name in tag_names:
+            Tag.validate_name(name)
         note = self.get_note(note_id)
         return self.repository.add_tags_to_note(note, tag_names)
 

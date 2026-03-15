@@ -9,6 +9,8 @@ class ContactsService:
         self.repository = repository
 
     def create_contact(self, name: str, phone: str, birthday: str | None = None) -> Contact:
+        Contact.validate_name(name)
+        Phone.validate_phone(phone)
         contact = Contact(name=name)
         contact.phones.append(Phone(value=phone))
 
@@ -35,6 +37,7 @@ class ContactsService:
             raise KeyError("Contact not found.")
 
         contact = results[0]
+        Phone.validate_phone(phone)
         contact.phones.append(Phone(value=phone))
         return self.repository.update(contact)
 
@@ -71,6 +74,7 @@ class ContactsService:
             raise KeyError("Contact not found.")
 
         contact = results[0]
+        Email.validate_email(email)
         contact.emails.append(Email(value=email))
         return self.repository.update(contact)
 
