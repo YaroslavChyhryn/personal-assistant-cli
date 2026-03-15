@@ -133,3 +133,27 @@ def test_remove_tag_from_note(svc: NotesService):
     updated = svc.remove_tag(created.id, "python")
     assert len(updated.tags) == 1
     assert updated.tags[0].name == "dev"
+
+
+def test_note_title_validation_rejects_empty():
+    with pytest.raises(ValueError, match="Note title cannot be empty"):
+        Note.model_validate({"title": ""})
+
+
+def test_note_title_validation_rejects_whitespace():
+    with pytest.raises(ValueError, match="Note title cannot be empty"):
+        Note.model_validate({"title": "   "})
+
+
+def test_tag_name_validation_rejects_empty():
+    from app.domain.models import Tag
+
+    with pytest.raises(ValueError, match="Tag name cannot be empty"):
+        Tag.model_validate({"name": ""})
+
+
+def test_update_note_validates_empty_title(svc: NotesService):
+    created = svc.create_note("Title", "Body")
+    assert created.id is not None
+    with pytest.raises(ValueError, match="Note title cannot be empty"):
+        svc.update_note(created.id, title="")

@@ -28,6 +28,20 @@ class Contact(SQLModel, table=True):
     address: str | None = None
     birthday: date | None = None
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Contact name cannot be empty")
+        return v.strip()
+
+    @field_validator("address")
+    @classmethod
+    def validate_address(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("Address cannot be empty if provided")
+        return v
+
     phones: list["Phone"] = Relationship(
         back_populates="contact",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -79,6 +93,13 @@ class Tag(SQLModel, table=True):
 
     notes: list["Note"] = Relationship(back_populates="tags", link_model=NoteTagLink)
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Tag name cannot be empty")
+        return v.strip()
+
 
 class Note(SQLModel, table=True):
     """Нотатка з заголовком, тілом та тегами."""
@@ -88,3 +109,10 @@ class Note(SQLModel, table=True):
     body: str = ""
 
     tags: list[Tag] = Relationship(back_populates="notes", link_model=NoteTagLink)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Note title cannot be empty")
+        return v.strip()

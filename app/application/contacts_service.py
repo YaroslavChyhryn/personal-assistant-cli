@@ -46,7 +46,7 @@ class ContactsService:
         contact = results[0]
         for p in contact.phones:
             if p.value == old_phone:
-                p.value = new_phone
+                p.value = Phone.validate_phone(new_phone)
                 return self.repository.update(contact)
 
         raise ValueError("Old phone number not found.")
@@ -80,7 +80,7 @@ class ContactsService:
             raise KeyError("Contact not found.")
 
         contact = results[0]
-        contact.address = address
+        contact.address = Contact.validate_address(address)
         return self.repository.update(contact)
 
     def delete_contact(self, contact_id: int) -> None:

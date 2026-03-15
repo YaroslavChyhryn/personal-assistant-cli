@@ -29,7 +29,7 @@ class NotesService:
     def update_note(self, note_id: int, title: str | None = None, body: str | None = None) -> Note:
         note = self.get_note(note_id)
         if title is not None:
-            note.title = title
+            note.title = Note.validate_title(title)
         if body is not None:
             note.body = body
         return self.repository.update(note)

@@ -155,3 +155,43 @@ def test_email_validation_accepts_valid():
 
     email = Email.model_validate({"value": "test@example.com", "contact_id": 1})
     assert email.value == "test@example.com"
+
+
+def test_contact_name_validation_rejects_empty():
+    from app.domain.models import Contact
+
+    with pytest.raises(ValueError, match="Contact name cannot be empty"):
+        Contact.model_validate({"name": ""})
+
+
+def test_contact_name_validation_rejects_whitespace():
+    from app.domain.models import Contact
+
+    with pytest.raises(ValueError, match="Contact name cannot be empty"):
+        Contact.model_validate({"name": "   "})
+
+
+def test_contact_address_validation_rejects_empty():
+    from app.domain.models import Contact
+
+    with pytest.raises(ValueError, match="Address cannot be empty"):
+        Contact.model_validate({"name": "Alice", "address": ""})
+
+
+def test_contact_address_allows_none():
+    from app.domain.models import Contact
+
+    contact = Contact.model_validate({"name": "Alice", "address": None})
+    assert contact.address is None
+
+
+def test_change_phone_validates_new_phone(svc: ContactsService):
+    svc.create_contact("Alice", "1234567890")
+    with pytest.raises(ValueError, match="10 digits"):
+        svc.change_phone("Alice", "1234567890", "bad")
+
+
+def test_set_address_validates_empty(svc: ContactsService):
+    svc.create_contact("Alice", "1234567890")
+    with pytest.raises(ValueError, match="Address cannot be empty"):
+        svc.set_address("Alice", "")
