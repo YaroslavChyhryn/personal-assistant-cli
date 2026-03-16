@@ -22,7 +22,7 @@ def setup() -> None:
 @contextmanager
 def get_services() -> (
     Generator[
-        tuple[ContactsService, NotesService, CalendarService, NotesRepository],
+        tuple[ContactsService, NotesService, CalendarService],
         None,
         None,
     ]
@@ -34,5 +34,4 @@ def get_services() -> (
             ContactsService(contacts_repo),
             NotesService(notes_repo),
             CalendarService(contacts_repo),
-            notes_repo,
         )

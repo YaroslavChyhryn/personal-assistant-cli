@@ -1,4 +1,5 @@
 import pytest
+
 from app.application.notes_service import NotesService
 from app.domain.models import Note
 from app.domain.repository import NotesRepository

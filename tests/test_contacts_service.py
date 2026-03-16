@@ -1,4 +1,5 @@
 import pytest
+
 from app.application.contacts_service import ContactsService
 from app.domain.repository import ContactsRepository
 

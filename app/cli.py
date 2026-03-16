@@ -245,11 +245,11 @@ def delete_note_cmd(args: list[str], svc: NotesService) -> str:
 
 
 @input_error
-def find_tag_cmd(args: list[str], repo: NotesRepository) -> str:
+def find_tag_cmd(args: list[str], svc: NotesService) -> str:
     if len(args) < 1:
         raise ValueError("Give me a tag name.")
     tag = args[0].strip("#")
-    results = repo.search_by_tag(tag)
+    results = svc.search_by_tag(tag)
     if not results:
         return f"No notes with tag '{tag}'."
     return "\n".join(f"[{n.id}] {n.title}: {n.body}" for n in results)
@@ -388,7 +388,7 @@ def run() -> None:
             elif command == "delete-note":
                 print(delete_note_cmd(args, notes_svc))
             elif command == "find-tag":
-                print(find_tag_cmd(args, notes_repo))
+                print(find_tag_cmd(args, notes_svc))
             elif command == "add-tag":
                 print(add_tag_cmd(args, notes_svc))
             elif command == "remove-tag":

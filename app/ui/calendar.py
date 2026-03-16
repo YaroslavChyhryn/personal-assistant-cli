@@ -12,7 +12,7 @@ def render_calendar_page() -> None:
 
     days = st.slider("Days ahead", min_value=1, max_value=365, value=7)
 
-    with get_services() as (_cs, _ns, cal_svc, _nr):
+    with get_services() as (_cs, _ns, cal_svc):
         contacts = cal_svc.get_upcoming_birthdays(days)
         display_data = [
             {

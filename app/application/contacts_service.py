@@ -87,5 +87,19 @@ class ContactsService:
         contact.address = Contact.validate_address(address)
         return self.repository.update(contact)
 
+    def remove_phone(self, name: str, phone: str) -> Contact:
+        results = self.repository.search(name)
+        if not results:
+            raise KeyError("Contact not found.")
+
+        contact = results[0]
+        original_count = len(contact.phones)
+        contact.phones = [p for p in contact.phones if p.value != phone]
+
+        if len(contact.phones) == original_count:
+            raise ValueError("Phone number not found.")
+
+        return self.repository.update(contact)
+
     def delete_contact(self, contact_id: int) -> None:
         self.repository.delete(contact_id)

@@ -4,7 +4,6 @@ from typing import TypedDict
 
 import streamlit as st
 
-from app.domain.models import Note
 from app.ui.helpers import toast
 from app.ui.services import get_services
 
@@ -30,7 +29,7 @@ def _confirm_delete_note(note_id: int, note_title: str) -> None:
     with col1:
         if st.button("Yes, delete", type="primary"):
             try:
-                with get_services() as (_c, svc, *_r):
+                with get_services() as (_c, svc, _cal):
                     svc.delete_note(note_id)
                 toast("success", f"Note '{note_title}' deleted.")
                 st.rerun()
@@ -55,8 +54,8 @@ def _add_tags_form(note_id: int) -> None:
             toast("error", "Enter at least one tag.")
             return
         try:
-            with get_services() as (_c, _n, _cal, notes_repo):
-                notes_repo.add_tags_to_note(note_id, tag_names)
+            with get_services() as (_c, notes_svc, _cal):
+                notes_svc.add_tags(note_id, tag_names)
             toast("success", "Tags added!")
             st.rerun()
         except (ValueError, KeyError) as exc:
@@ -69,8 +68,8 @@ def _remove_tag_form(note_id: int, tags: list[str]) -> None:
         if not tag_to_remove:
             return
         try:
-            with get_services() as (_c, _n, _cal, notes_repo):
-                notes_repo.remove_tag_from_note(note_id, tag_to_remove)
+            with get_services() as (_c, notes_svc, _cal):
+                notes_svc.remove_tag(note_id, tag_to_remove)
             toast("success", f"Tag '{tag_to_remove}' removed!")
             st.rerun()
         except (ValueError, KeyError) as exc:
@@ -105,10 +104,10 @@ def render_notes_page() -> None:
                 placeholder="Tag name…",
             )
 
-        with get_services() as (_cs, notes_svc, _cal, notes_repo):
+        with get_services() as (_cs, notes_svc, _cal):
             all_notes = notes_svc.list_notes()
             if tag_query:
-                filtered = notes_repo.search_by_tag(tag_query)
+                filtered = notes_svc.search_by_tag(tag_query)
             elif text_query:
                 filtered = notes_svc.search_notes(text_query)
             else:
@@ -184,14 +183,8 @@ def render_notes_page() -> None:
             else:
                 try:
                     tag_names = [t.strip() for t in tags_raw.split(",") if t.strip()]
-                    with get_services() as (_c, notes_svc, _cal, notes_repo):
-                        if tag_names:
-                            notes_repo.add_with_tags(
-                                Note(title=title, body=body),
-                                tag_names,
-                            )
-                        else:
-                            notes_svc.create_note(title, body)
+                    with get_services() as (_c, notes_svc, _cal):
+                        notes_svc.create_note(title, body, tags=tag_names or None)
                     toast("success", f"Note '{title}' created!")
                     st.rerun()
                 except (ValueError, KeyError) as exc:

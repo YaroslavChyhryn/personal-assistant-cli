@@ -30,6 +30,9 @@ class NotesService:
     def search_notes(self, query: str) -> list[Note]:
         return self.repository.search(query)
 
+    def search_by_tag(self, tag: str) -> list[Note]:
+        return self.repository.search_by_tag(tag)
+
     def update_note(self, note_id: int, title: str | None = None, body: str | None = None) -> Note:
         note = self.get_note(note_id)
         if title is not None:

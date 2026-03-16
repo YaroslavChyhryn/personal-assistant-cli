@@ -1,4 +1,6 @@
 sqlmodel>=0.0.37
+streamlit>=1.55.0
+pandas>=2.3.3
 pytest>=9.0.2
 ruff>=0.15.6
 pre-commit>=4.5.1
