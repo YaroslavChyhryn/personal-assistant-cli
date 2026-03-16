@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.domain.models import Contact, Phone
+from app.domain.models import Contact, Email, Phone
 from app.domain.repository import ContactsRepository
 
 
@@ -9,6 +9,8 @@ class ContactsService:
         self.repository = repository
 
     def create_contact(self, name: str, phone: str, birthday: str | None = None) -> Contact:
+        Contact.validate_name(name)
+        Phone.validate_phone(phone)
         contact = Contact(name=name)
         contact.phones.append(Phone(value=phone))
 
@@ -35,6 +37,7 @@ class ContactsService:
             raise KeyError("Contact not found.")
 
         contact = results[0]
+        Phone.validate_phone(phone)
         contact.phones.append(Phone(value=phone))
         return self.repository.update(contact)
 
@@ -46,7 +49,7 @@ class ContactsService:
         contact = results[0]
         for p in contact.phones:
             if p.value == old_phone:
-                p.value = new_phone
+                p.value = Phone.validate_phone(new_phone)
                 return self.repository.update(contact)
 
         raise ValueError("Old phone number not found.")
@@ -65,18 +68,24 @@ class ContactsService:
         contact.birthday = birthday_date
         return self.repository.update(contact)
 
-    def remove_phone(self, name: str, phone: str) -> Contact:
+    def add_email(self, name: str, email: str) -> Contact:
         results = self.repository.search(name)
         if not results:
             raise KeyError("Contact not found.")
 
         contact = results[0]
-        for p in contact.phones:
-            if p.value == phone:
-                contact.phones.remove(p)
-                return self.repository.update(contact)
+        Email.validate_email(email)
+        contact.emails.append(Email(value=email))
+        return self.repository.update(contact)
 
-        raise ValueError("Phone number not found.")
+    def set_address(self, name: str, address: str) -> Contact:
+        results = self.repository.search(name)
+        if not results:
+            raise KeyError("Contact not found.")
+
+        contact = results[0]
+        contact.address = Contact.validate_address(address)
+        return self.repository.update(contact)
 
     def delete_contact(self, contact_id: int) -> None:
         self.repository.delete(contact_id)

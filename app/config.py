@@ -1,8 +1,7 @@
 import logging
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT_DIR / "data"
+DATA_DIR = Path.home() / ".assistant"
 DB_PATH = DATA_DIR / "assistant.db"
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 

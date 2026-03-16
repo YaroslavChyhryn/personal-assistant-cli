@@ -1,6 +1,6 @@
-# Personal Assistant
+# Personal Assistant CLI
 
-Помічник для управління контактами, нотатками та днями народження з CLI та Web UI інтерфейсами. Фінальний проєкт з Python Programming.
+CLI-помічник для управління контактами, нотатками та днями народження. Фінальний проєкт з Python Programming.
 
 ## Архітектура
 
@@ -8,7 +8,7 @@
 
 - **Domain** — SQLModel-моделі (єдиний клас = таблиця + схема + об'єкт), валідація, репозиторії (бізнес-логіка запитів)
 - **Application** — сервіси (use cases): створення контакту, пошук нотатки, upcoming birthdays
-- **Interfaces** — CLI (input/print цикл), Web UI (Streamlit)
+- **Interfaces** — CLI (input/print цикл як у домашці), у майбутньому — Streamlit / API
 
 **Ключове правило:** CLI не працює напряму з БД. CLI викликає сервіси, сервіси працюють через репозиторії, репозиторії працюють із SQLModel/SQLite.
 
@@ -17,24 +17,59 @@
 ## Функціональність
 
 ### Контакти / Дні народження
-- CRUD контактів
-- Валідація телефону та email
+- CRUD контактів (ім'я, телефон, email, адреса, день народження)
+- Валідація всіх полів: ім'я контакту, телефон (10 цифр), email (формат user@domain.tld), адреса, заголовок нотатки, ім'я тегу
 - Зберігання дня народження
-- Пошук найближчих днів народження за N днів
+- Пошук найближчих днів народження за N днів (з урахуванням вихідних)
 
 ### Нотатки / Теги
-- CRUD нотаток
-- Повнотекстовий пошук
+- CRUD нотаток (створення, перегляд, редагування, видалення)
+- Повнотекстовий пошук по заголовку та тілу нотатки
 - Теги (додавання, видалення, пошук/фільтрація по тегах)
 
 ### CLI
 - Інтерактивний цикл команд (input/print)
 - Декоратор для обробки помилок
+- Коректна обробка некоректного введення без закриття програми
 
-### Web UI (Streamlit)
-- Сторінка контактів — пошук, створення, редагування телефонів, видалення
-- Сторінка нотаток — пошук за текстом і тегами, створення, управління тегами
-- Сторінка календаря — найближчі дні народження з налаштуванням періоду (слайдер)
+## Як користуватися CLI
+
+Після запуску бот очікує команди в інтерактивному режимі:
+
+**Контакти:**
+
+| Команда | Опис | Приклад |
+|---|---|---|
+| `hello` | Привітання | `hello` |
+| `add` | Додати контакт (ім'я + телефон) | `add John 0501234567` |
+| `change` | Змінити телефон | `change John 0501234567 0509876543` |
+| `phone` | Показати телефон контакту | `phone John` |
+| `all` | Показати всі контакти | `all` |
+| `add-birthday` | Додати день народження | `add-birthday John 25.12.1990` |
+| `show-birthday` | Показати день народження | `show-birthday John` |
+| `birthdays` | Найближчі дні народження | `birthdays 7` |
+| `add-email` | Додати email контакту | `add-email John john@example.com` |
+| `add-address` | Додати адресу контакту | `add-address John 123 Main St` |
+| `delete-contact` | Видалити контакт | `delete-contact John` |
+
+**Нотатки:**
+
+| Команда | Опис | Приклад |
+|---|---|---|
+| `add-note` | Додати нотатку (з тегами через #) | `add-note Shopping Buy milk #urgent` |
+| `list-notes` | Показати всі нотатки | `list-notes` |
+| `find-note` | Пошук нотатки | `find-note keyword` |
+| `edit-note` | Редагувати нотатку | `edit-note 1 NewTitle new body` |
+| `delete-note` | Видалити нотатку | `delete-note 1` |
+| `find-tag` | Пошук нотаток за тегом | `find-tag python` |
+| `add-tag` | Додати тег(и) до нотатки | `add-tag 1 python dev` |
+| `remove-tag` | Видалити тег з нотатки | `remove-tag 1 python` |
+
+**Загальні:**
+
+| Команда | Опис | Приклад |
+|---|---|---|
+| `close` / `exit` | Вийти з програми | `exit` |
 
 ## Технології
 
@@ -43,8 +78,6 @@
 | Python 3.12+ | Мова |
 | SQLModel | ORM (поверх SQLAlchemy + Pydantic) |
 | SQLite | Локальне сховище даних |
-| Streamlit | Web UI |
-| pandas | Табличне відображення даних |
 | pytest | Тестування |
 | ruff | Лінтинг та форматування |
 | pre-commit | Git hooks для якості коду |
@@ -63,7 +96,6 @@ personal-assistant-cli/
 ├── app/
 │   ├── main.py
 │   ├── cli.py
-│   ├── ui.py
 │   ├── config.py
 │   ├── bootstrap.py
 │   ├── db.py
@@ -101,88 +133,32 @@ source .venv/bin/activate  # Linux/macOS
 # .venv\Scripts\activate   # Windows
 ```
 
-3. Встановити залежності:
+3. Встановити як пакет:
+```bash
+pip install .
+```
+
+4. Запустити застосунок з будь-якого місця системи (віртуальне середовище має бути активоване):
+```bash
+assistant
+```
+
+> **Примітка:** команда `assistant` доступна лише при активованому віртуальному середовищі, оскільки виконуваний файл встановлюється у `.venv/bin/`. Перед запуском переконайтесь, що виконали `source .venv/bin/activate`.
+
+> **Зберігання даних:** при першому запуску у домашній директорії користувача створюється папка `~/.assistant/` з файлом бази даних `assistant.db`. Усі контакти, нотатки та теги зберігаються там і не втрачаються після перезапуску програми.
+
+Альтернативний запуск (без встановлення пакету):
 ```bash
 pip install -r requirements.txt
-```
-
-4. Встановити pre-commit hooks:
-```bash
-pip install pre-commit
-pre-commit install
-```
-
-5. Запустити застосунок:
-
-**CLI режим:**
-```bash
 python -m app.main
 ```
 
-**Web UI (Streamlit):**
+### Для розробників
+
 ```bash
-PYTHONPATH=. streamlit run app/ui/__init__.py
+pip install -e ".[dev]"
+pre-commit install
 ```
-
-> На Windows використовуйте:
-> ```bash
-> set PYTHONPATH=. && streamlit run app/ui.py
-> ```
-
-## Приклади використання
-
-### CLI
-
-```
-$ python -m app.main
-
-Welcome to Personal Assistant!
-Enter a command (or 'help'): help
-
-Available commands:
-  add-contact     — Create a new contact
-  search-contact  — Search contacts by name
-  show-contacts   — List all contacts
-  add-phone       — Add a phone to a contact
-  change-phone    — Change an existing phone
-  remove-phone    — Remove a phone from a contact
-  set-birthday    — Set a contact's birthday
-  birthdays       — Show upcoming birthdays
-  add-note        — Create a new note
-  search-notes    — Search notes by text
-  show-notes      — List all notes
-  add-tags        — Add tags to a note
-  search-by-tag   — Search notes by tag
-  delete-contact  — Delete a contact
-  delete-note     — Delete a note
-  exit            — Quit the assistant
-
-Enter a command: add-contact
-Name: John Doe
-Phone (10 digits): 0501234567
-Birthday (DD.MM.YYYY, optional):
-Contact 'John Doe' created!
-
-Enter a command: add-note
-Title: Shopping list
-Body: Milk, bread, eggs
-Tags (comma-separated, optional): grocery, todo
-Note 'Shopping list' created!
-
-Enter a command: birthdays
-Days ahead (default 7): 30
-Upcoming birthdays:
-  John Doe — 15.04.2000 — (050) 123-45-67
-```
-
-### Web UI (Streamlit)
-
-Після запуску `PYTHONPATH=. streamlit run app/ui/__init__.py` відкрийте браузер за адресою `http://localhost:8501`.
-
-Доступні сторінки:
-- **Contacts** — перегляд, пошук, створення, редагування та видалення контактів
-- **Notes** — перегляд, пошук, створення нотаток, управління тегами
-- **Calendar** — перегляд найближчих днів народження з налаштуванням періоду
 
 ### Розробка
 
@@ -191,7 +167,6 @@ Upcoming birthdays:
 ruff check app/
 ruff format app/
 ```
-
 
 Запустити pre-commit на всіх файлах:
 ```bash

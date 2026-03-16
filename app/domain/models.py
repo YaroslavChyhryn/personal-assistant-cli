@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 from pydantic import field_validator
@@ -6,18 +7,46 @@ from sqlmodel import Field, Relationship, SQLModel
 # ── Contacts (Dev 1) ────────────────────────────────────────────────
 
 
-class Contact(SQLModel, table=True):
-    # Primary key for SQLite table
+class Email(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    value: str
+    contact_id: int = Field(foreign_key="contact.id")
+    contact: "Contact" = Relationship(back_populates="emails")
 
-    # Contact name, indexed for faster search
+    @field_validator("value")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not re.match(pattern, v):
+            raise ValueError("Invalid email format")
+        return v
+
+
+class Contact(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
-
-    # Birthday is stored as date object, not string
+    address: str | None = None
     birthday: date | None = None
 
-    # One contact can have many phones
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Contact name cannot be empty")
+        return v.strip()
+
+    @field_validator("address")
+    @classmethod
+    def validate_address(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("Address cannot be empty if provided")
+        return v
+
     phones: list["Phone"] = Relationship(
+        back_populates="contact",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    emails: list["Email"] = Relationship(
         back_populates="contact",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -64,6 +93,13 @@ class Tag(SQLModel, table=True):
 
     notes: list["Note"] = Relationship(back_populates="tags", link_model=NoteTagLink)
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Tag name cannot be empty")
+        return v.strip()
+
 
 class Note(SQLModel, table=True):
     """Нотатка з заголовком, тілом та тегами."""
@@ -73,3 +109,10 @@ class Note(SQLModel, table=True):
     body: str = ""
 
     tags: list[Tag] = Relationship(back_populates="notes", link_model=NoteTagLink)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Note title cannot be empty")
+        return v.strip()

@@ -1,14 +1,12 @@
+from collections import defaultdict
 from datetime import date, timedelta
-from typing import Generic, TypeVar
 
-from sqlmodel import Session, SQLModel, or_, select
+from sqlmodel import Session, SQLModel, col, func, or_, select
 
 from app.domain.models import Contact, Note, NoteTagLink, Tag
 
-T = TypeVar("T", bound=SQLModel)
 
-
-class BaseRepository(Generic[T]):
+class BaseRepository[T: SQLModel]:
     """Base repository with working CRUD operations.
 
     Subclasses only need to set `model` and add domain-specific queries.
@@ -59,7 +57,7 @@ class ContactsRepository(BaseRepository[Contact]):
 
     def search(self, query: str) -> list[Contact]:
         # Search contacts by partial name match
-        statement = select(Contact).where(Contact.name.contains(query))  # type: ignore[attr-defined]
+        statement = select(Contact).where(col(Contact.name).contains(query))
         return list(self.session.exec(statement).all())
 
     def _birthday_for_year(self, original_birthday: date, year: int) -> date:
@@ -116,8 +114,8 @@ class NotesRepository(BaseRepository[Note]):
     def search(self, query: str) -> list[Note]:
         statement = select(Note).where(
             or_(
-                Note.title.contains(query),  # type: ignore[attr-defined]
-                Note.body.contains(query),  # type: ignore[attr-defined]
+                col(Note.title).contains(query),
+                col(Note.body).contains(query),
             )
         )
         return list(self.session.exec(statement).all())
@@ -126,44 +124,65 @@ class NotesRepository(BaseRepository[Note]):
         statement = select(Note).join(NoteTagLink).join(Tag).where(Tag.name == tag)
         return list(self.session.exec(statement).all())
 
+    def _get_or_create_tag(self, name: str) -> Tag:
+        statement = select(Tag).where(Tag.name == name)
+        tag = self.session.exec(statement).first()
+        if tag is None:
+            tag = Tag(name=name)
+        return tag
+
     def add_with_tags(self, note: Note, tag_names: list[str]) -> Note:
         for name in tag_names:
-            statement = select(Tag).where(Tag.name == name)
-            tag = self.session.exec(statement).first()
-            if tag is None:
-                tag = Tag(name=name)
-            note.tags.append(tag)
+            note.tags.append(self._get_or_create_tag(name))
 
         self.session.add(note)
         self.session.commit()
         self.session.refresh(note)
         return note
 
-    def add_tags_to_note(self, note_id: int, tag_names: list[str]) -> Note:
-        note = self.get_by_id(note_id)
-        if note is None:
-            raise KeyError(f"Note with id={note_id} not found.")
-
+    def add_tags_to_note(self, note: Note, tag_names: list[str]) -> Note:
         existing = {t.name for t in note.tags}
         for name in tag_names:
-            if name in existing:
-                continue
-            statement = select(Tag).where(Tag.name == name)
-            tag = self.session.exec(statement).first()
-            if tag is None:
-                tag = Tag(name=name)
-            note.tags.append(tag)
+            if name not in existing:
+                note.tags.append(self._get_or_create_tag(name))
 
+        self.session.add(note)
         self.session.commit()
         self.session.refresh(note)
         return note
 
-    def remove_tag_from_note(self, note_id: int, tag_name: str) -> Note:
-        note = self.get_by_id(note_id)
-        if note is None:
-            raise KeyError(f"Note with id={note_id} not found.")
-
+    def remove_tag_from_note(self, note: Note, tag_name: str) -> Note:
         note.tags = [t for t in note.tags if t.name != tag_name]
+        self.session.add(note)
         self.session.commit()
         self.session.refresh(note)
         return note
+
+    def list_notes_grouped_by_tag(self) -> dict[str, list[Note]]:
+        """Return notes grouped by tag name, sorted alphabetically by tag."""
+        statement = (
+            select(Tag, Note)
+            .join(NoteTagLink, col(Tag.id) == col(NoteTagLink.tag_id))
+            .join(Note, col(Note.id) == col(NoteTagLink.note_id))
+            .order_by(Tag.name, Note.title)
+        )
+        grouped: dict[str, list[Note]] = defaultdict(list)
+        for tag, note in self.session.exec(statement).all():
+            grouped[tag.name].append(note)
+        return dict(grouped)
+
+    def list_untagged_notes(self) -> list[Note]:
+        """Return notes that have no tags."""
+        tagged_ids = select(NoteTagLink.note_id)
+        statement = select(Note).where(col(Note.id).notin_(tagged_ids))
+        return list(self.session.exec(statement).all())
+
+    def get_tag_counts(self) -> list[tuple[str, int]]:
+        """Return (tag_name, note_count) pairs sorted by count descending."""
+        statement = (
+            select(Tag.name, func.count(col(NoteTagLink.note_id)))
+            .join(NoteTagLink, col(Tag.id) == col(NoteTagLink.tag_id))
+            .group_by(Tag.name)
+            .order_by(func.count(col(NoteTagLink.note_id)).desc())
+        )
+        return list(self.session.exec(statement).all())
